@@ -77,8 +77,8 @@ Ouvrez VS Code → Ouvrir un dossier → Sélectionnez `arduino-web-uploader`.
 ```
 arduino-web-uploader/
 ├── public/
-│   └── index.html       # Collez votre code HTML/JS depuis SAMMANE_AMINE_PFA.zip
-├── server.js            # Collez votre code backend depuis SAMMANE_AMINE_PFA.zip
+│   └── index.html       # Collez votre code HTML/JS 
+├── server.js            # Collez votre code backend 
 └── package.json         # Généré via `npm init -y`
 ```
 
