@@ -50,12 +50,18 @@ node --version   # Doit afficher v18+ (ex: v22.16.0)
 npm --version    # Doit afficher v9+ (ex: 10.9.2)
 ```
 
-**Initialisation du projet :**
+**Créer un dossier pour le projet  :**
 
 ```cmd
 mkdir arduino-web-uploader
 cd arduino-web-uploader
+```
+**Initialiser le projet Node.js :**
+```cmd
 npm init -y
+```
+**Installer les dépendances nécessaires :**
+```cmd
 npm install express multer cors
 ```
 
