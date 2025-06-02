@@ -1,76 +1,102 @@
-# arduino-web-uploader
-Interface web pour compiler et uploader des sketches Arduino via Node.js et Arduino-CLI
 # 📜 Guide Complet d'Installation & Exécution
 
 ## 1️⃣ Installer Arduino-CLI
-Téléchargez :  
+
+**Téléchargez :**
 [https://arduino.github.io/arduino-cli/1.2/installation/](https://arduino.github.io/arduino-cli/1.2/installation/)
 
 **Étapes :**
+
 1. Extraire le fichier ZIP dans un dossier (ex: `C:\Users\amine\Desktop`).
-2. Ajouter au PATH :
-   - Ouvrez `Paramètres` → `Variables d'environnement` → `Path` → `Modifier`.
-   - Ajoutez le chemin du dossier (ex: `C:\Users\amine\Desktop`).
+2. Ajouter au **PATH** :
+
+   * Ouvrez `Paramètres` → `Variables d'environnement` → `Path` → `Modifier`.
+   * Ajoutez le chemin du dossier (ex: `C:\Users\amine\Desktop`).
 3. Vérifier en CMD :
+
    ```cmd
    arduino-cli version
-→ Doit afficher la version (ex: 1.2.2).
+   ```
+
+   → Doit afficher la version (ex: 1.2.2).
 4. Configurer Arduino-CLI :
 
-cmd
-arduino-cli config init
-arduino-cli core update-index
-arduino-cli core install arduino:avr
-Tester avec une carte :
+   ```cmd
+   arduino-cli config init
+   arduino-cli core update-index
+   arduino-cli core install arduino:avr
+   ```
+5. **Tester avec une carte :**
+   Branchez votre Arduino via USB.
+   Lancez :
 
-Branchez votre Arduino via USB.
+   ```cmd
+   arduino-cli board list
+   ```
 
-Lancez :
+   → Doit afficher le port (ex: COM3 ou /dev/ttyACM0).
 
-cmd
-arduino-cli board list
-→ Doit afficher le port (ex: COM3 ou /dev/ttyACM0).
+---
 
-2️⃣ Installer Node.js
-Téléchargez :
-Node.js LTS → Installez avec les options par défaut (cocher "Automatically install tools").
+## 2️⃣ Installer Node.js
 
-Vérification :
+**Téléchargez :**
+Node.js LTS → Installez avec les options par défaut (cocher *"Automatically install tools"*).
 
-cmd
-node --version  # Doit afficher v18+ (ex: v22.16.0)
-npm --version   # Doit afficher v9+ (ex: 10.9.2)
-Initialisation du projet :
+**Vérification :**
 
-cmd
+```cmd
+node --version   # Doit afficher v18+ (ex: v22.16.0)
+npm --version    # Doit afficher v9+ (ex: 10.9.2)
+```
+
+**Initialisation du projet :**
+
+```cmd
 mkdir arduino-web-uploader
 cd arduino-web-uploader
 npm init -y
 npm install express multer cors
-3️⃣ Configurer le Projet
-Téléchargez et installez VS Code.
+```
 
-Ouvrez VS Code → Ouvrir un dossier → Sélectionnez arduino-web-uploader.
+---
 
-Structure des fichiers :
+## 3️⃣ Configurer le Projet
 
+**Téléchargez et installez VS Code.**
+Ouvrez VS Code → Ouvrir un dossier → Sélectionnez `arduino-web-uploader`.
+
+**Structure des fichiers :**
+
+```
 arduino-web-uploader/
 ├── public/
-│   └── index.html  # Collez votre code HTML/JS depuis SAMMANE_AMINE_PFA.zip
-├── server.js       # Collez votre code backend depuis SAMMANE_AMINE_PFA.zip
-└── package.json    # Généré via `npm init -y`
-Installer les dépendances :
+│   └── index.html       # Collez votre code HTML/JS depuis SAMMANE_AMINE_PFA.zip
+├── server.js            # Collez votre code backend depuis SAMMANE_AMINE_PFA.zip
+└── package.json         # Généré via `npm init -y`
+```
 
-cmd
+**Installer les dépendances :**
+
+```cmd
 npm install express multer cors dotenv express-rate-limit
-4️⃣ Lancer le Système
-Démarrer le serveur :
+```
 
-cmd
+---
+
+## 4️⃣ Lancer le Système
+
+**Démarrer le serveur :**
+
+```cmd
 node server.js
-→ Message : "Serveur démarré sur http://localhost:3000".
+```
 
-Ouvrez dans le navigateur :
-http://localhost:3000.
+→ Message : *"Serveur démarré sur [http://localhost:3000](http://localhost:3000)"*
 
-Branchez votre carte Arduino avant d’utiliser l’interface.
+**Ouvrez dans le navigateur :**
+[http://localhost:3000](http://localhost:3000)
+
+**⚠️ Branchez votre carte Arduino avant d’utiliser l’interface.**
+
+---
