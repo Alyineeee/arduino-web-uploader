@@ -8,10 +8,8 @@
 - Compiler le code Arduino en local.
 - Téléverser le programme directement sur la carte, sans passer par l’IDE Arduino traditionnel.
 
+![image](https://github.com/user-attachments/assets/f3d005f1-2501-43d8-a69e-3b829de3dd0c)
 
- ![image](https://github.com/user-attachments/assets/8b706c8c-17f5-4466-a7dc-a78c85dcf286)
-![image](https://github.com/user-attachments/assets/560e024a-6c9f-4f0c-842f-7e8cf92f9e71)
-![image](https://github.com/user-attachments/assets/c81bdf9f-2eff-4c86-a6a7-18a444cba705)
 
 # 📜 Guide Complet d'Installation & Exécution
 
