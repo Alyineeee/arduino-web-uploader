@@ -1,4 +1,5 @@
 # 📜 Guide Complet d'Installation & Exécution
+ ![image](https://github.com/user-attachments/assets/8b706c8c-17f5-4466-a7dc-a78c85dcf286)
 
 ## 1️⃣ Installer Arduino-CLI
 
@@ -6,6 +7,7 @@
 [https://arduino.github.io/arduino-cli/1.2/installation/](https://arduino.github.io/arduino-cli/1.2/installation/)
 
 **Étapes :**
+
 
 1. Extraire le fichier ZIP dans un dossier (ex: `C:\Users\amine\Desktop`).
 2. Ajouter au **PATH** :
