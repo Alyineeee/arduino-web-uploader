@@ -26,7 +26,9 @@ const limiter = rateLimit({
   max: 30
 });
 
-// Routes
+// =========================
+// Route GET /boards
+// =========================
 app.get('/boards', async (req, res) => {
   try {
     exec('arduino-cli board list --format json', (err, stdout) => {
@@ -37,15 +39,21 @@ app.get('/boards', async (req, res) => {
 
       try {
         const boardsData = JSON.parse(stdout);
-        const connectedBoards = boardsData
-          .filter(board => board.port && board.port.address && board.boards)
-          .map(board => ({
-            port: board.port.address,
-            fqbn: board.boards[0]?.fqbn,
-            name: board.boards[0]?.name
+        
+        // Traitement du nouveau format JSON
+        const detectedPorts = boardsData.detected_ports || [];
+        const connectedBoards = detectedPorts
+          .filter(port => port.port?.address && port.matching_boards?.length > 0)
+          .map(port => ({
+            port: port.port.address,
+            fqbn: port.matching_boards[0]?.fqbn,
+            name: port.matching_boards[0]?.name
           }));
 
-        res.json(connectedBoards);
+        res.json({
+          detected_ports: detectedPorts,
+          connectedBoards: connectedBoards
+        });
       } catch (parseErr) {
         console.error("Erreur parsing JSON:", parseErr);
         res.status(500).json({ error: "Erreur traitement données cartes" });
@@ -57,7 +65,9 @@ app.get('/boards', async (req, res) => {
   }
 });
 
-// Nouvelle route pour le code direct
+// =========================
+// Route POST /upload-code
+// =========================
 app.post('/upload-code', limiter, async (req, res) => {
   const { code, port, fqbn, filename } = req.body;
 
@@ -96,7 +106,9 @@ app.post('/upload-code', limiter, async (req, res) => {
   }
 });
 
-// Route pour l'upload de fichier
+// =========================
+// Route POST /upload-file
+// =========================
 app.post('/upload-file', limiter, upload.single('sketch'), async (req, res) => {
   const { port, fqbn } = req.body;
   const file = req.file;
@@ -112,7 +124,9 @@ app.post('/upload-file', limiter, upload.single('sketch'), async (req, res) => {
   }
 
   try {
-    const sketchPath = path.join(SKETCHES_DIR, path.basename(file.originalname, '.ino'));
+    const sketchName = path.basename(file.originalname, '.ino');
+    const sketchPath = path.join(SKETCHES_DIR, sketchName);
+
     fs.mkdirSync(sketchPath, { recursive: true });
     fs.renameSync(file.path, path.join(sketchPath, file.originalname));
 
@@ -139,15 +153,20 @@ app.post('/upload-file', limiter, upload.single('sketch'), async (req, res) => {
   }
 });
 
+// =========================
 // Initialisation
+// =========================
 if (!fs.existsSync(SKETCHES_DIR)) fs.mkdirSync(SKETCHES_DIR);
 
 app.listen(PORT, () => {
   console.log(`Serveur démarré sur http://localhost:${PORT}`);
   console.log("Vérification arduino-cli...");
-  
+
   exec('arduino-cli version', (err) => {
-    if (err) console.error("❌ arduino-cli non trouvé. Installez-le d'abord.");
-    else console.log("✅ arduino-cli détecté");
+    if (err) {
+      console.error("❌ arduino-cli non trouvé. Installez-le d'abord.");
+    } else {
+      console.log("✅ arduino-cli détecté");
+    }
   });
 });
