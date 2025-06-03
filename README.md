@@ -1,5 +1,7 @@
 # 📜 Guide Complet d'Installation & Exécution
  ![image](https://github.com/user-attachments/assets/8b706c8c-17f5-4466-a7dc-a78c85dcf286)
+![image](https://github.com/user-attachments/assets/560e024a-6c9f-4f0c-842f-7e8cf92f9e71)
+![image](https://github.com/user-attachments/assets/c81bdf9f-2eff-4c86-a6a7-18a444cba705)
 
 ## 1️⃣ Installer Arduino-CLI
 
