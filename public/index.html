@@ -12,9 +12,15 @@
       padding: 1rem;
       border-radius: 0.25rem;
       min-height: 150px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
     }
     .card { margin-bottom: 1.5rem; }
-    textarea { font-family: 'Courier New', monospace; }
+    textarea { 
+      font-family: 'Courier New', monospace;
+      min-height: 300px;
+    }
     .editor-container { position: relative; }
     .editor-toolbar {
       background: #f8f9fa;
@@ -22,6 +28,10 @@
       border-top-left-radius: 0.25rem;
       border-top-right-radius: 0.25rem;
     }
+    .status-success { color: #198754; }
+    .status-error { color: #dc3545; }
+    .status-info { color: #0dcaf0; }
+    .board-connected { color: #198754; font-weight: bold; }
   </style>
 </head>
 <body class="container py-4">
@@ -52,6 +62,8 @@
           <button id="refreshBtn" class="btn btn-outline-primary" onclick="loadBoards()">
             <i class="bi bi-arrow-repeat"></i> Rafraîchir la liste
           </button>
+          <span id="boardStatus" class="ms-2"></span>
+          <div id="boardInfo" class="mt-2"></div>
         </div>
       </div>
     </div>
@@ -87,7 +99,7 @@ void loop() {
       <div class="mt-3">
         <div class="input-group">
           <input type="text" id="sketchName" class="form-control" placeholder="NomDuSketch (optionnel)">
-          <button class="btn btn-success" onclick="uploadCode()">
+          <button id="uploadBtn" class="btn btn-success" onclick="uploadCode()">
             <i class="bi bi-upload"></i> Compiler & Téléverser
           </button>
         </div>
@@ -105,7 +117,7 @@ void loop() {
           <label for="sketchFile" class="form-label">Fichier .ino</label>
           <input class="form-control" type="file" id="sketchFile" name="sketch" accept=".ino" required>
         </div>
-        <button type="submit" class="btn btn-info text-white">
+        <button id="fileUploadBtn" type="submit" class="btn btn-info text-white">
           <i class="bi bi-upload"></i> Téléverser le fichier
         </button>
       </form>
@@ -131,17 +143,23 @@ void loop() {
     const refreshBtn = document.getElementById('refreshBtn');
     const codeEditor = document.getElementById('codeEditor');
     const sketchNameInput = document.getElementById('sketchName');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileUploadBtn = document.getElementById('fileUploadBtn');
+    const boardStatus = document.getElementById('boardStatus');
+    const boardInfo = document.getElementById('boardInfo');
 
     // Charger les cartes connectées
     async function loadBoards() {
       try {
         setLoading(true);
-        output.textContent = "Détection des cartes en cours...";
+        updateStatus("Détection des cartes en cours...", 'info');
+        clearBoardInfo();
         
         const response = await fetch('/boards');
         if (!response.ok) throw new Error(await response.text());
         
-        const boards = await response.json();
+        const data = await response.json();
+        const boards = data.connectedBoards || [];
         
         // Mettre à jour les sélecteurs
         portSelect.innerHTML = '<option value="" selected disabled>Sélectionnez un port</option>';
@@ -149,7 +167,7 @@ void loop() {
         boardSelect.disabled = true;
         
         if (boards.length === 0) {
-          output.textContent = "❌ Aucune carte Arduino détectée. Connectez une carte et rafraîchissez.";
+          updateStatus("Aucune carte Arduino détectée", 'error');
           return;
         }
         
@@ -161,12 +179,44 @@ void loop() {
           portSelect.appendChild(option);
         });
         
-        output.textContent = `✅ ${boards.length} carte(s) détectée(s)`;
+        updateStatus(`${boards.length} carte(s) détectée(s)`, 'success');
       } catch (err) {
         console.error(err);
-        output.textContent = `❌ Erreur: ${err.message}`;
+        updateStatus(`Erreur: ${err.message}`, 'error');
       } finally {
         setLoading(false);
+      }
+    }
+
+    // Effacer les infos de la carte
+    function clearBoardInfo() {
+      boardInfo.innerHTML = '';
+    }
+
+    // Afficher les détails de la carte
+    function showBoardInfo(board) {
+      boardInfo.innerHTML = `
+        <div class="alert alert-success">
+          <h5 class="alert-heading">${board.name}</h5>
+          <hr>
+          <p class="mb-1"><strong>Port:</strong> ${board.port}</p>
+          <p class="mb-1"><strong>FQBN:</strong> ${board.fqbn}</p>
+        </div>
+      `;
+    }
+
+    // Mettre à jour le statut
+    function updateStatus(message, type) {
+      output.textContent = message;
+      boardStatus.textContent = message;
+      boardStatus.className = 'ms-2';
+      
+      if (type === 'success') {
+        boardStatus.classList.add('status-success');
+      } else if (type === 'error') {
+        boardStatus.classList.add('status-error');
+      } else {
+        boardStatus.classList.add('status-info');
       }
     }
 
@@ -180,12 +230,15 @@ void loop() {
         const response = await fetch('/boards');
         if (!response.ok) throw new Error(await response.text());
         
-        const boards = await response.json();
+        const data = await response.json();
+        const boards = data.connectedBoards || [];
         const selectedBoard = boards.find(b => b.port === selectedPort);
         
         if (!selectedBoard) {
           boardSelect.innerHTML = '<option value="" selected disabled>Carte non reconnue</option>';
           boardSelect.disabled = true;
+          updateStatus("Carte non reconnue", 'error');
+          clearBoardInfo();
           return;
         }
         
@@ -195,9 +248,12 @@ void loop() {
         option.textContent = `${selectedBoard.name} (${selectedBoard.fqbn})`;
         boardSelect.appendChild(option);
         boardSelect.disabled = false;
+        
+        updateStatus(`Carte ${selectedBoard.name} détectée`, 'success');
+        showBoardInfo(selectedBoard);
       } catch (err) {
         console.error(err);
-        output.textContent = `❌ Erreur: ${err.message}`;
+        updateStatus(`Erreur: ${err.message}`, 'error');
       } finally {
         setLoading(false);
       }
@@ -211,18 +267,18 @@ void loop() {
       const filename = sketchNameInput.value.trim();
       
       if (!port || !fqbn) {
-        output.textContent = "❌ Veuillez sélectionner un port et une carte valides";
+        updateStatus("Veuillez sélectionner un port et une carte valides", 'error');
         return;
       }
       
       if (!code) {
-        output.textContent = "❌ Veuillez écrire du code ou coller un sketch";
+        updateStatus("Veuillez écrire du code ou coller un sketch", 'error');
         return;
       }
       
       try {
         setLoading(true);
-        output.textContent = "Compilation et téléversement en cours...";
+        updateStatus("Compilation et téléversement en cours...", 'info');
         
         const response = await fetch('/upload-code', {
           method: 'POST',
@@ -236,10 +292,10 @@ void loop() {
         });
         
         const result = await response.text();
-        output.textContent = result;
+        updateStatus(result, response.ok ? 'success' : 'error');
       } catch (err) {
         console.error(err);
-        output.textContent = `❌ Erreur: ${err.message}`;
+        updateStatus(`Erreur: ${err.message}`, 'error');
       } finally {
         setLoading(false);
       }
@@ -254,18 +310,18 @@ void loop() {
       const fileInput = document.getElementById('sketchFile');
       
       if (!port || !fqbn) {
-        output.textContent = "❌ Veuillez sélectionner un port et une carte valides";
+        updateStatus("Veuillez sélectionner un port et une carte valides", 'error');
         return;
       }
       
       if (fileInput.files.length === 0) {
-        output.textContent = "❌ Veuillez sélectionner un fichier .ino";
+        updateStatus("Veuillez sélectionner un fichier .ino", 'error');
         return;
       }
       
       try {
         setLoading(true);
-        output.textContent = "Téléversement en cours...";
+        updateStatus("Téléversement en cours...", 'info');
         
         const formData = new FormData();
         formData.append('sketch', fileInput.files[0]);
@@ -278,12 +334,13 @@ void loop() {
         });
         
         const result = await response.text();
-        output.textContent = result;
+        updateStatus(result, response.ok ? 'success' : 'error');
       } catch (err) {
         console.error(err);
-        output.textContent = `❌ Erreur: ${err.message}`;
+        updateStatus(`Erreur: ${err.message}`, 'error');
       } finally {
         setLoading(false);
+        fileInput.value = '';
       }
     });
 
@@ -291,16 +348,14 @@ void loop() {
     function insertTemplate() {
       codeEditor.value = `void setup() {
   pinMode(13, OUTPUT); // LED intégrée
-  Serial.begin(9600);
+  
 }
 
 void loop() {
   digitalWrite(13, HIGH);
-  Serial.println("LED allumée");
   delay(1000);
   
   digitalWrite(13, LOW);
-  Serial.println("LED éteinte");
   delay(1000);
 }`;
     }
@@ -313,8 +368,8 @@ void loop() {
 
     function setLoading(loading) {
       refreshBtn.disabled = loading;
-      uploadForm.querySelector('button').disabled = loading;
-      document.querySelector('button[onclick="uploadCode()"]').disabled = loading;
+      uploadBtn.disabled = loading;
+      fileUploadBtn.disabled = loading;
       
       if (loading) {
         refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Chargement...';
